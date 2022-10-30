@@ -1,0 +1,34 @@
+{
+  "colors": {
+    "surface1": "#0f111a",
+    "surface2": "#20222c",
+    "surface3": "#0f111a",
+    "clickable": "#aaaaaa",
+    "base": "#ffffff",
+    "disabled": "#aaaaaa",
+    "hover": "#ffffff",
+    "accent": "#ffcb6b",
+    "error": "#e54b4b",
+    "errorSurface": "#2b1515"
+  },
+  "syntax": {
+    "plain": "#82aaff",
+    "comment": {
+      "color": "#C3CEE2",
+      "fontStyle": "italic"
+    },
+    "keyword": "#c792ea",
+    "tag": "#f07178",
+    "punctuation": "#89ddff",
+    "definition": "#82aaff",
+    "property": "#ffcb6b",
+    "static": "#89ddff",
+    "string": "#c3e88d"
+  },
+  "font": {
+    "body": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",
+    "mono": "\"Operator Mono Lig\", \"MonoLisa\", \"Fira Mono\", \"DejaVu Sans Mono\", Menlo, Consolas, \"Liberation Mono\", Monaco, \"Lucida Console\", monospace",
+    "size": "15px",
+    "lineHeight": "22px"
+  }
+}

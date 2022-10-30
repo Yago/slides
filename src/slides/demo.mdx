@@ -2,24 +2,732 @@ import { Box, FlexBox } from 'spectacle';
 
 import Code from '../components/Code';
 
-# Hello
+<FlexBox className="absolute w-full align-center justify-center flex-col top-32 -left-8">
+  <img alt="hero" src="/images/zod-white.png" style={{width: '310px'}} />
+</FlexBox>
+<FlexBox className="absolute w-full align-center justify-center flex-col top-80 mt-8 -left-8">
+  # ZOD
+</FlexBox>
+
+<Box className="absolute top-20 -left-8 -z-[1]">
+  <img alt="hero" src="/images/zod-hero.jpg" style={{width: '100%'}} />
+</Box>
+
+<Box className="absolute left-8 bottom-6">
+  #### Yann <span className="text-green">—</span> dev coffee <span className="text-green">—</span> 01.11.2022
+</Box>
+
+---
+
+## Zod
+
+TypeScript-first schema validation with static type inference
+
+---
+
+## Basic usage
 
 <Code
   terminal
-  highlights={[[1,9], [11, 11]]}
+  highlights={[[1,1],[4,5],[7,9],[11,13]]}
+  customSetup={{
+    dependencies: {
+      zod: '3.19.1',
+    },
+  }}
   files={{
-  'index.js': `const people = [{
-  id: 0,
-  name: 'Creola Katherine Johnson',
-  profession: 'mathematician',
-}, {
-  id: 1,
-  name: 'Mario José Molina-Pasquel Henríquez',
-  profession: 'chemist',
-}];
+  'index.ts': `import { z } from 'zod';
+import l from './log';
 
-console.log('yololo');`,
+// Creating a schema for strings
+const simpleSchema = z.string();
+
+// Parsing
+simpleSchema.parse('john');
+// simpleSchema.parse(2);
+
+// "Safe" parsing
+l( simpleSchema.safeParse("tuna") );
+l( simpleSchema.safeParse(12) );`,
 }} />
+
+---
+
+## Primitives
+
+<Code
+  terminal
+  highlights={[[4,9],[11,14],[16,19],[21,23]]}
+  customSetup={{
+    dependencies: {
+      zod: '3.19.1',
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+// Primitive values
+z.string();
+z.number();
+z.bigint();
+z.boolean();
+z.date();
+
+// Empty types
+z.undefined();
+z.null();
+z.void(); // accepts undefined
+
+// catch-all types
+// allows any value
+z.any();
+z.unknown();
+
+// Never type
+// allows no values
+z.never();`,
+  }} />
+
+---
+
+## Objects
+
+<Code
+  terminal
+  highlights={[[4,8],[10,11],[13,17],[19,23]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+// All properties are required by default
+const DogSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+});
+
+// Classic Type assignment
+type Dog = z.infer<typeof DogSchema>;
+
+const coopy: Dog = {
+  name: 'Cooper',
+  age: 2,
+};
+DogSchema.parse(coopy);
+
+// Inferred Type from parsing
+const marius = DogSchema.parse({
+  name: 'Marius',
+  age: 7
+});`,
+  }} />
+
+---
+
+## Objects: shape
+
+<Code
+  terminal
+  highlights={[[5,6]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// Use .shape to access the schemas for a particular key.
+l( DogSchema.shape.name.parse('Marius') );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+      hidden: true,
+    },
+  }} />
+
+---
+
+## Objects: keyof
+
+<Code
+  terminal
+  highlights={[[5,7]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// Use .keyof to create a ZodEnum schema
+// from the keys of an object schema.
+l( DogSchema.keyof().options );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+    hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: extend
+
+<Code
+  terminal
+  highlights={[[5,9],[11,11]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema, coopy } from './dogs.ts';
+
+// You can add additional fields to an object schema
+// with the .extend method.
+const DogWithBreedSchema = DogSchema.extend({
+  breed: z.string(),
+});
+
+l( DogWithBreedSchema.parse({...coopy, breed: 'Lévrier stylé'}) );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });
+      export const coopy = { name: 'Cooper', age: 2 };`,
+    hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: merge
+
+<Code
+  terminal
+  highlights={[[5,8],[11,11]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema, coopy } from './dogs.ts';
+
+// Equivalent to A.extend(B.shape).
+const BreedSchema = z.object({
+  breed: z.string(),
+});
+
+l(
+  DogSchema.merge(BreedSchema).parse({...coopy, breed: 'Lévrier stylé'})
+ );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });
+      export const coopy = { name: 'Cooper', age: 2 };`,
+    hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: pick/omit
+
+<Code
+  terminal
+  highlights={[[6,6],[7,7]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// Inspired by TypeScript's built-in Pick and Omit utility types
+l( DogSchema.omit({ age: true }).parse({ name: 'Marius' }) );
+l( DogSchema.pick({ name: true }).parse({ name: 'Marius' }) );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+    hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: partial
+
+<Code
+  terminal
+  highlights={[[5,6]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// Inspired by the built-in TypeScript utility type Partial
+l( DogSchema.partial().parse({ name: 'Cruz' }) );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+    hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: deepPartial
+
+<Code
+  terminal
+  highlights={[[4,11],[13,13]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+const userSchema = z.object({
+  username: z.string(),
+  location: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+  strings: z.array(z.object({ value: z.string() })),
+});
+
+l( userSchema.deepPartial().parse({ username: 'Yago' }) );`,
+  }} />
+
+---
+
+## Objects: required
+
+<Code
+  terminal
+  highlights={[[5,6]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// the .required method makes all properties required.
+l( DogSchema.partial().required().parse({ name: 'Cruz', age: 2 }) );`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+      hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: passthrough
+
+<Code
+  terminal
+  highlights={[[5,9],[12,14]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// By default Zod object schemas
+// strip out unrecognized keys during parsing.
+l(
+  DogSchema.parse({ name: 'Cooper', age: 2, color: 'White something' })
+);
+
+l(
+  DogSchema
+    .passthrough()
+    .parse({ name: 'Cooper', age: 2, color: 'White something' })
+);`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+      hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: strict
+
+<Code
+  terminal
+  highlights={[[5,9],[12,14]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// By default Zod object schemas
+// strip out unrecognized keys during parsing.
+l(
+  DogSchema.parse({ name: 'Cooper', age: 2, color: 'White something' })
+);
+
+l(
+  DogSchema
+    .strict()
+    .parse({ name: 'Cooper', age: 2, color: 'White something' })
+);`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+      hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: strip
+
+<Code
+  terminal
+  highlights={[[5,11]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// You can use the .strip method to reset to the default behavior
+l(
+  DogSchema
+    .strict()
+    .strip()
+    .parse({ name: 'Cooper', age: 2, color: 'White something' })
+)`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+      hidden: true,
+  },
+  }} />
+
+---
+
+## Objects: catchall
+
+<Code
+  terminal
+  highlights={[[5,6],[9,13],[17,21]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+import { DogSchema } from './dogs.ts';
+
+// All unknown keys will be validated against it.
+const DogSchemaCatch = DogSchema.catchall(z.string());
+
+l(
+  DogSchemaCatch.parse({
+    name: 'Cooper',
+    age: 2,
+    color: 'White something'
+  })
+);
+
+l(
+  DogSchemaCatch.parse({
+    name: 'Cooper',
+    age: 2,
+    eyes: 2
+  })
+);`,
+    'dogs.ts': {
+      code: `import { z } from 'zod';
+      export const DogSchema = z.object({ name: z.string(), age: z.number() });`,
+      hidden: true,
+  },
+  }} />
+
+---
+
+## Array
+
+<Code
+  terminal
+  highlights={[[4,4],[5,6],[8,9],[11,12],[14,15],[17,18]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+const arrayOfStringSchema = z.array(z.string());
+// equivalent
+const stringArraySchema = z.string().array();
+
+type arrayOfString = z.infer<typeof arrayOfStringSchema>;
+type stringArray = z.infer<typeof stringArraySchema>;
+
+const dogs1: arrayOfString = ['Cooper', 'Marius'];
+const dogs2: stringArray = ['Cooper', 'Marius'];
+
+l( arrayOfStringSchema.parse(dogs1) );
+l( arrayOfStringSchema.parse(dogs2) );
+
+l( stringArraySchema.parse(dogs1) );
+l( stringArraySchema.parse(dogs2) );`,
+  }} />
+
+---
+
+## Array : methods
+
+<Code
+  terminal
+  highlights={[[6,9],[11,14],[16,19]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+const stringArraySchema = z.string().array();
+
+// Use .element to access the schema for an element of the array.
+l('element :',
+ stringArraySchema.element.parse('Cooper')
+);
+
+// If you want to ensure that an array contains at least one element.
+l('nonempty :',
+  stringArraySchema.nonempty().parse(['Cooper'])
+);
+
+// .min/.max/.length
+l('min/max/length :',
+  stringArraySchema.min(2).parse(['Cooper', 'Marius'])
+);
+`,
+  }} />
+
+---
+
+## Tupple
+
+<Code
+  terminal
+  highlights={[[4,9],[11,11]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+// Unlike arrays,
+// tuples have a fixed number of elements with a different type.
+const tuppleDogSchema = z.tuple([
+  z.string(), // name
+  z.number(), // age
+]);
+
+l( tuppleDogSchema.parse(['Cooper', 2]) );
+`,
+  }} />
+
+---
+
+## Unions
+
+<Code
+  terminal
+  highlights={[[4,5],[7,7],[9,9]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+// Zod includes a built-in z.union method for composing "OR" types.
+const stringOrNumberSchema = z.union([z.string(), z.number()]);
+
+l( stringOrNumberSchema.parse('Cooper') );
+
+l( stringOrNumberSchema.parse(2) );`,
+  }} />
+
+---
+
+## Records
+
+<Code
+  terminal
+  highlights={[[4,7],[9,12],[14,14]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+// Record schemas are used to validate types
+// such as { [k: string]: number }.
+const numberCacheSchema = z.record(z.number());
+// = z.record(z.string(), z.number())
+
+const cache = {
+  '77d2586b': 2,
+  '87da904a': 3
+};
+
+l( numberCacheSchema.parse(cache) );`,
+  }} />
+
+---
+
+## Others
+
+- Maps
+- Sets
+- Intersections
+- Recursive types
+- Promises
+- Instanceof
+
+---
+
+## Functions
+
+<Code
+  terminal
+  highlights={[[4,7],[8,8],[10,10],[12,14]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import l from './log';
+
+const addSchema = z
+  .function()
+  .args(z.number(), z.number())
+  .returns(z.number());
+type Add = z.infer<typeof addSchema>;
+
+const add: Add = (a, b) => a + b;
+
+l( add(1,2) );
+l( addSchema.parse(add) );
+l( addSchema.parse(add)(1,2) );`,
+  }} />
+
+---
+
+# API Validation
+
+---
+
+<Code
+  terminal
+  highlights={[[4,8],[10,12],[14,16],[18,28]]}
+  customSetup={{
+    dependencies: {
+      zod: "3.19.1",
+      miragejs: "0.1.45"
+    },
+  }}
+  files={{
+    'index.ts': `import { z } from 'zod';
+import { createServer } from 'miragejs';
+
+createServer({ routes() { this.get("/movies", () => [
+  { id: 1, name: "Inception", year: 2010 },
+  { id: 2, name: "Interstellar", year: 2014 },
+  { id: 3, name: "Dunkirk", year: 2017 },
+]); this.logging = false; }});
+
+const moviesSchema =
+  z.object({ id: z.number(), name: z.string(), year: z.number() })
+   .array();
+
+const getMovies = () => fetch('/movies')
+  .then(res => res.json())
+  .then(res => moviesSchema.safeParse(res));
+
+(async () => {
+  const movies = await getMovies();
+
+  if (movies.success) {
+    movies.data.forEach(({ name, year }) => {
+      console.log(name + ' - ' + year);
+    });
+  } else {
+    console.error(movies.error);
+  }
+})()`,
+  }} />
 
 ---
 

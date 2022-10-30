@@ -4,19 +4,25 @@ import {
   SandpackCodeViewer,
   SandpackThemeProvider,
   SandpackCodeEditor,
-  SandpackConsole,
   SandpackPreview,
-  SandpackLayout
+  SandpackProps,
+  SandpackTheme,
+  SandpackFiles
 } from '@codesandbox/sandpack-react';
-import { range, isNil, isEmpty } from 'ramda';
-import { useSteps } from 'spectacle';
+import { range, isNil, isEmpty, keys } from 'ramda';
+import { useSteps, Appear } from 'spectacle';
+import clsx from 'clsx';
+
+import Console from './Console';
+import theme from '../config/sandpack-theme.json';
 
 export type Props = {
-  editor?: boolean;
   terminal?: boolean;
   preview?: boolean;
   highlights?: [number, number][];
   files: Record<string, string>;
+  customSetup?: Record<string, Record<string, string>>;
+  template?: SandpackProps['template'];
 };
 
 type Decorator = {
@@ -25,17 +31,19 @@ type Decorator = {
 };
 
 const Code = ({
-  editor = false,
   terminal = false,
   preview = false,
   highlights = [],
-  files
+  files,
+  customSetup = {},
+  template
 }: Props): JSX.Element => {
   const [decorators, setDecorators] = useState<Decorator[] | undefined>();
-  const { step, isActive, placeholder } = useSteps(editor ? 0 : highlights.length);
+  const [currentTab, _setCurrentTab] = useState<string>(keys(files)[0]);
+  const { step, isActive, placeholder } = useSteps(highlights.length + 1);
 
   useEffect(() => {
-    if (isActive) {
+    if (isActive && step !== highlights.length) {
       const newDecorators = highlights.map(([a,b]) =>
         range(a, b + 1)
           .reduce((a: Decorator[], v): Decorator[] => [
@@ -50,43 +58,77 @@ const Code = ({
   }, [isActive, step]);
 
   return (
-    <>
+    <div className="max-h-full w-full overflow-auto rounded-lg -mx-4 bg-gray border border-gray-clear">
       {placeholder}
-      {!isNil(highlights) && !isEmpty(highlights) && !editor && (
+      {!isNil(highlights) && !isEmpty(highlights) && step !== highlights.length && (
         <style>
           {`
-            .sp-code-editor .cm-line { opacity: 0.5;}
-            .sp-code-editor .highlight { opacity: 1;}
+            .sp-preview-wrapper .cm-line { opacity: 0.5;}
+            .sp-preview-wrapper .highlight { opacity: 1;}
           `}
         </style>
       )}
+      <style>
+        {`
+          .sp-preview-wrapper .cm-line { padding-left: 4px !important; }
+          .sp-console .sp-button { bottom: auto; top: var(--sp-space-2); }
+          .sp-console > div > div { padding-top: 5px; padding-bottom: 5px; }
+        `}
+      </style>
       <SandpackProvider
+        template={template}
         customSetup={{
-          entry: "index.js"
+          entry: currentTab,
+          ...customSetup,
         }}
-        files={files}
+        files={{
+          ...files,
+          'log.ts': {
+            code: `export default (...args) => {
+              let input = args;
+              if (!Array.isArray(input)) input = [args];
+              console.log(...input);
+            }`,
+            hidden: true
+          }
+        }}
       >
-        <SandpackThemeProvider theme="dark">
-          <SandpackLayout>
-            {!editor && (
-              <SandpackCodeViewer decorators={decorators} />
-            )}
-            {editor && (
-              <SandpackCodeEditor />
-            )}
-            {preview && (
-              <SandpackPreview />
-            )}
-            {terminal && !preview && (
-              <SandpackPreview style={{height: 0, flex: 0, minWidth: 0}} />
-            )}
-            {terminal && (
-              <SandpackConsole />
-            )}
-          </SandpackLayout>
+        <SandpackThemeProvider theme={theme as SandpackTheme} className="w-full">
+          <div className="flex w-[1232px]">
+            <div className={clsx('relative border-r border-gray-clear', preview || terminal ? 'w-1/2' : 'w-full')}>
+              <div className={clsx(
+                'transition-opacity',
+                step === highlights.length ? 'opacity-100' : 'opacity-50'
+              )}>
+                <SandpackCodeEditor />
+              </div>
+              <div className={clsx(
+                'transition-opacity sp-preview-wrapper absolute inset-0',
+                step === highlights.length ? 'opacity-0 -z-[1]' : 'opacity-100'
+              )}>
+                <SandpackCodeViewer decorators={decorators} />
+              </div>
+            </div>
+            <div className={clsx(
+              'w-1/2 shrink-0 bg-gray transition-opacity',
+              step === highlights.length ? 'opacity-100' : 'opacity-0'
+              )}>
+              {preview && (
+                <SandpackPreview />
+              )}
+              {terminal && !preview && (
+                <SandpackPreview className="h-0 flex-0 min-w-0" />
+              )}
+              {terminal && (
+                <div className="w-full bg-gray">
+                  <Console />
+                </div>
+              )}
+            </div>
+          </div>
         </SandpackThemeProvider>
       </SandpackProvider>
-    </>
+    </div>
   );
 };
 
