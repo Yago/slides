@@ -1,6 +1,8 @@
 import { Box, FlexBox, Appear } from 'spectacle';
 
 import Code from '../components/Code';
+import Highlight from '../components/Highlight';
+import Step from '../components/Step';
 
 <FlexBox className="absolute w-full align-center justify-center flex-col top-32 -left-8">
   <img alt="hero" src="/images/zod-white.png" style={{width: '310px'}} />
@@ -786,18 +788,38 @@ const setDog = (formData: FormData) => new Promise((res, rej) => {
 
 ## Best practices - naming
 
-- Schema Name → <span className="text-green">`[camelCase NAME]Schema`</span> (f.ex. moviesSchema)
-- Type Name → <span className="text-green">`[PascaleCase NAME]`</span> (f.ex. Movies)
+- Schema Name → <Highlight>`[camelCase NAME]Schema`</Highlight> (f.ex. moviesSchema)
+- Type Name → <Highlight>`[PascaleCase NAME]`</Highlight> (f.ex. Movies)
 
 ---
 
 ## Patterns
 
-- Types ? <Appear>→ Don't over use it, favor inference</Appear>
-- Inference ? <Appear>→ Prefer schema.parse instead of `z.infer<>`</Appear>
-- Parse location ? <Appear>→ In the service/hook</Appear>
-- TS Types or Zod Schema ? <Appear>→ Zod for data, TS for the rest (args, props, etc)</Appear>
-- Parse or SafeParse ? <Appear>→ SafeParse if you need the success check, but Parse in a catched error wrapper.</Appear>
+#### <Step>Types <Highlight>?</Highlight></Step>
+<Step>
+  → Don't over use it, favor inference
+</Step>
+
+#### <Step>Inference <Highlight>?</Highlight></Step>
+<Step>
+  → Prefer schema.parse instead of `z.infer<>`
+</Step>
+
+#### <Step>Parse location <Highlight>?</Highlight></Step>
+<Step>
+  → In the service/hook
+</Step>
+
+#### <Step>TS Types or Zod Schema <Highlight>?</Highlight></Step>
+<Step>
+  → Zod for data, TS for the rest (args, props, etc)
+</Step>
+
+#### <Step>Parse or SafeParse <Highlight>?</Highlight></Step>
+<Step>
+  → SafeParse if you need the success check, but Parse in a catched error wrapper.
+</Step>
+
 
 ---
 

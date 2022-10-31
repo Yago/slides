@@ -11,6 +11,8 @@ import {
 } from 'spectacle';
 import { splitWhenever } from 'ramda';
 
+import Step from './components/Step';
+
 import MDX from './slides/demo.mdx';
 
 const typo = {
@@ -26,10 +28,10 @@ const App = () => {
       h4: ({ children }) => (<h4 className="text-3xl font-bold">{children}</h4>),
       h5: ({ children }) => (<h5 className="text-2xl font-bold">{children}</h5>),
       h6: ({ children }) => (<h6 className="text-xl font-bold">{children}</h6>),
-      p: ({ children }) => (<p className="text-3xl my-8">{children}</p>),
+      p: ({ children }) => (<p className="text-3xl my-4">{children}</p>),
       blockquote: ({ children }) => (<Appear><Text {...typo} fontSize={38} color="#77E955">{children}</Text></Appear>),
-      ul: ({ children }) => (<UnorderedList {...typo} className="text-3xl marker:text-green list-outside list-disc">{children}</UnorderedList>),
-      li: ({ children }) => (<Appear><ListItem>{children}</ListItem></Appear>),
+      ul: ({ children }) => (<ul className="text-3xl marker:text-green list-inside list-disc space-y-4">{children}</ul>),
+      li: ({ children }) => (<Step><li>{children}</li></Step>),
       a: ({ href, children }) => (<a href={href} target="_blank" className="text-green underline underline-offset-6">{children}</a>),
     }
   }) as JSX.Element).props.children);
