@@ -29,7 +29,7 @@ const App = () => {
     slides?: 'zod'
   } = Object.fromEntries(urlSearchParams.entries());
 
-  if (isNil(params.slides)) return 'wrong slides...';
+  if (isNil(params.slides)) return <div className="w-screen h-screen flex justify-center items-center bg-black text-white text-4xl">Wrong slides...</div>;
 
   const content = mdx[params.slides];
 
