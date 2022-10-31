@@ -9,18 +9,31 @@ import {
   fadeTransition,
   Progress,
 } from 'spectacle';
-import { splitWhenever } from 'ramda';
+import { isNil, splitWhenever } from 'ramda';
 
 import Step from './components/Step';
 
-import MDX from './slides/demo.mdx';
+import zod from './slides/zod.mdx';
+
+const mdx = {
+  zod,
+};
 
 const typo = {
   fontFamily: 'Space Grotesk',
 };
 
 const App = () => {
-  const slides = splitWhenever((i: JSX.Element) => i.type === 'hr', (MDX({
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const params: {
+    slides?: 'zod'
+  } = Object.fromEntries(urlSearchParams.entries());
+
+  if (isNil(params.slides)) return 'wrong slides...';
+
+  const content = mdx[params.slides];
+
+  const slides = splitWhenever((i: JSX.Element) => i.type === 'hr', (content({
     components: {
       h1: ({ children }) => (<h1 className="text-8xl font-bold my-5 text-center mt-64">{children}</h1>),
       h2: ({ children }) => (<h2 className="text-7xl font-semibold mb-10">{children}</h2>),

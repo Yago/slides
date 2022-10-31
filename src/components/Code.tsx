@@ -7,7 +7,6 @@ import {
   SandpackPreview,
   SandpackProps,
   SandpackTheme,
-  SandpackFiles
 } from '@codesandbox/sandpack-react';
 import { range, isNil, isEmpty, keys } from 'ramda';
 import { useSteps, Appear } from 'spectacle';
